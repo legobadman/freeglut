@@ -191,6 +191,8 @@ FGAPI int     FGAPIENTRY glutBitmapHeight( void* font );
 FGAPI GLfloat FGAPIENTRY glutStrokeHeight( void* font );
 FGAPI void    FGAPIENTRY glutBitmapString( void* font, const unsigned char *string );
 FGAPI void    FGAPIENTRY glutStrokeString( void* font, const unsigned char *string );
+FGAPI void    FGAPIENTRY glutGetStrokeString2( void* font, GLfloat startpos[3], const char* string, GLfloat* data, int* size, int* arr_split, int* split_size );
+FGAPI void    FGAPIENTRY glutGetStrokeString(void* font, const char* string, GLfloat* data, int* size, int* arr_split, int* split_size);
 
 /*
  * Geometry functions, see fg_geometry.c

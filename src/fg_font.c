@@ -334,6 +334,120 @@ void FGAPIENTRY glutStrokeCharacter( void* fontID, int character )
     glTranslatef( schar->Right, 0.0, 0.0 );
 }
 
+void FGAPIENTRY glutGetStrokeString(void* fontID, const char* string, GLfloat* data, int* size, int* arr_split, int* split_size)
+{
+    unsigned char c;
+    int i, j;
+    float length = 0.0;
+    SFG_StrokeFont* font;
+    FREEGLUT_EXIT_IF_NOT_INITIALISED("glutStrokeString");
+    font = fghStrokeByID(fontID);
+    if (!font)
+    {
+        fgWarning("glutStrokeString: stroke font 0x%08x not found. Make sure you're not passing a bitmap font.\n", fontID);
+        return;
+    }
+    if (!string || !*string)
+        return;
+
+    /*
+     * Step through the string, drawing each character.
+     * A newline will simply translate the next character's insertion
+     * point back to the start of the line and down one line.
+     */
+    while ((c = *string++))
+    {
+        if (c < font->Quantity)
+        {
+            const SFG_StrokeChar* schar = font->Characters[c];
+            if (schar)
+            {
+                const SFG_StrokeStrip* strip = schar->Strips;
+                for (i = 0; i < schar->Number; i++, strip++)
+                {
+                    for (j = 0; j < strip->Number; j++) {
+                        GLfloat x = strip->Vertices[j].X + length;
+                        GLfloat y = strip->Vertices[j].Y;
+                        *data++ = x;
+                        *data++ = y;
+                        *size = *size + 2;
+                    }
+                }
+                length += schar->Right;
+                *arr_split++ = *size;
+                (*split_size)++;
+            }
+        }
+    }
+}
+
+void FGAPIENTRY glutGetStrokeString2(void* fontID, GLfloat startpos[3], const char* string, GLfloat* data, int* size, int* arr_split, int* split_size)
+{
+    unsigned char c;
+    int i, j;
+    float length = 0.0;
+    SFG_StrokeFont* font;
+    FREEGLUT_EXIT_IF_NOT_INITIALISED("glutStrokeString");
+    font = fghStrokeByID(fontID);
+    if (!font)
+    {
+        fgWarning("glutStrokeString: stroke font 0x%08x not found. Make sure you're not passing a bitmap font.\n", fontID);
+        return;
+    }
+    if (!string || !*string)
+        return;
+
+    /*
+     * Step through the string, drawing each character.
+     * A newline will simply translate the next character's insertion
+     * point back to the start of the line and down one line.
+     */
+    while ((c = *string++))
+    {
+        if (c < font->Quantity)
+        {
+            if (c == '\n')
+            {
+                //no support newline
+                //glTranslatef(-length, -(float)(font->Height), 0.0);
+                //length = 0.0;
+            }
+            else  /* Not an EOL, draw the bitmap character */
+            {
+                const SFG_StrokeChar* schar = font->Characters[c];
+                if (schar)
+                {
+                    const SFG_StrokeStrip* strip = schar->Strips;
+
+                    for (i = 0; i < schar->Number; i++, strip++)
+                    {
+                        //glBegin(GL_LINE_STRIP);
+                        for (j = 0; j < strip->Number; j++) {
+                            GLfloat x = startpos[0] + strip->Vertices[j].X + length;
+                            GLfloat y = startpos[1] + strip->Vertices[j].Y;
+                            GLfloat z = startpos[2];
+                            *data++ = x;
+                            *data++ = y;
+                            *data++ = z;
+                            *size = *size + 3;
+
+                            //glVertex2f(strip->Vertices[j].X,
+                            //    strip->Vertices[j].Y);
+                        }
+                        //glEnd();
+                    }
+
+                    length += schar->Right;
+                    //glTranslatef(schar->Right, 0.0, 0.0);
+                    *arr_split++ = *size;
+                    (*split_size)++;
+                }
+            }
+        }
+    }
+
+}
+
 void FGAPIENTRY glutStrokeString( void* fontID, const unsigned char *string )
 {
     unsigned char c;
